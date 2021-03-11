@@ -32,9 +32,9 @@
   ],
   "main": "./lib",
   "dependencies": {
+    "got": "^11.8.1",
     "oauth": "0.9.x",
     "passport-strategy": "1.x.x",
-    "request": "^2.75.0",
     "webfinger": "0.4.x"
   },
   "devDependencies": {
@@ -42,14 +42,14 @@
     "chai-passport-strategy": "1.x.x",
     "jsonwebtoken": "^7.1.9",
     "make-node": "0.3.x",
-    "mocha": "2.x.x",
+    "mocha": "^8.2.1",
     "proxyquire": "^1.7.10",
-    "sinon": "^1.17.6"
+    "sinon": "^9.2.4"
   },
   "engines": {
     "node": ">= 0.6.0"
   },
   "scripts": {
-    "test": "node_modules/.bin/mocha --reporter spec --require test/bootstrap/node test/*.test.js test/**/*.test.js"
+    "test": "mocha --reporter spec --require test/bootstrap/node test/*.test.js test/**/*.test.js"
   }
 }

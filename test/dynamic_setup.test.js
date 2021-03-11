@@ -3,7 +3,7 @@ var assert = require('assert');
 var sinon = require('sinon');
 
 // Mocks, stubs etc.
-var requestGet = sinon.stub(require('request'), 'get');
+var gotGet = sinon.stub(require('got'), 'get');
 
 // Code under test.
 var setup = require('../lib/setup/dynamic');
@@ -17,7 +17,19 @@ describe('OpenID Connect Dynamic Discovery', function () {
     var callback = sinon.spy();
 
     before(function () {
-      requestGet.reset();
+      gotGet.reset();
+      gotGet.resolves(
+        { 
+          statusCode: 200,
+          body: JSON.stringify({
+            issuer: 'myissuer',
+            authorization_endpoint: 'foo',
+            token_endpoint: 'bar',
+            userinfo_endpoint: 'baz',
+            registration_endpoint: 'qux'
+          })
+        }
+      );
       setup({ resolver: resolver, registrar: registrar })('baz', callback);
     });
 
@@ -27,18 +39,7 @@ describe('OpenID Connect Dynamic Discovery', function () {
     });
 
     it('should get information from openid-configuration', function () {
-      assert(requestGet.calledWith('resolvedIssuer/.well-known/openid-configuration'));
-      requestGet.yield(
-        null,
-        { statusCode: 200 },
-        JSON.stringify({
-          issuer: 'myissuer',
-          authorization_endpoint: 'foo',
-          token_endpoint: 'bar',
-          userinfo_endpoint: 'baz',
-          registration_endpoint: 'qux'
-        })
-      );
+      assert(gotGet.calledWith('resolvedIssuer/.well-known/openid-configuration'));
     });
 
     it('should register the client', function () {
@@ -49,13 +50,13 @@ describe('OpenID Connect Dynamic Discovery', function () {
 
     it('should have both server and client information in final callback', function () {
       assert.strictEqual(callback.args[0][0], null);
-      assert.equal(callback.args[0][1].clientID, 'foo');
-      assert.equal(callback.args[0][1].clientSecret, 'bar');
-      assert.equal(callback.args[0][1].issuer, 'myissuer');
-      assert.equal(callback.args[0][1].authorizationURL, 'foo');
-      assert.equal(callback.args[0][1].tokenURL, 'bar');
-      assert.equal(callback.args[0][1].userInfoURL, 'baz');
-      assert.equal(callback.args[0][1].registrationURL, 'qux');
+      assert.strictEqual(callback.args[0][1].clientID, 'foo');
+      assert.strictEqual(callback.args[0][1].clientSecret, 'bar');
+      assert.strictEqual(callback.args[0][1].issuer, 'myissuer');
+      assert.strictEqual(callback.args[0][1].authorizationURL, 'foo');
+      assert.strictEqual(callback.args[0][1].tokenURL, 'bar');
+      assert.strictEqual(callback.args[0][1].userInfoURL, 'baz');
+      assert.strictEqual(callback.args[0][1].registrationURL, 'qux');
     });
   });
 });
